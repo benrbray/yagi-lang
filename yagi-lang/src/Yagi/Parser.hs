@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeFamilies      #-}
 {-# LANGUAGE InstanceSigs      #-}
 {-# LANGUAGE TupleSections     #-}
-module Parser where
+module Yagi.Parser where
 
 -- megaparsec
 import Text.Megaparsec hiding (State)

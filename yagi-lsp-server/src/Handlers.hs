@@ -19,11 +19,15 @@ import Control.Lens (assign, modifying, use, (^.))
 
 -- lsp
 import Language.LSP.Types.Lens
+    ( HasParams(params), HasTextDocument(textDocument), HasUri(uri) )
 import qualified Language.LSP.Types as J
 import qualified Language.LSP.Server as LSP
 
--- yagi
+-- yagi-lsp-server
 import State
+
+-- yagi-lang
+import Yagi.Lang
 
 ------------------------------------------------------------
 

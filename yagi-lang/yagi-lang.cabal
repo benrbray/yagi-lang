@@ -16,8 +16,28 @@ maintainer:          benrbray@gmail.com
 build-type:          Simple
 extra-source-files:  CHANGELOG.md
 
-executable yagi
+library
   hs-source-dirs:  src
+  build-depends:
+    base >=4.14 && <4.15  ,
+    containers            ,
+    extra                 ,
+    mtl                   ,
+    megaparsec            ,
+    parser-combinators    ,
+    text
+  default-language:    Haskell2010
+  exposed-modules:
+    Yagi.Lang,
+    Yagi.Parser
+  other-modules:
+    TextSpan,
+    PrettyPrint,
+    RecursionSchemes,
+    ExprF
+
+executable yagi
+  hs-source-dirs:  yagi
   main-is:         Main.hs
   build-depends:
     base >=4.14 && <4.15  ,
@@ -29,36 +49,18 @@ executable yagi
     text
   default-language:    Haskell2010
   other-modules:
-    Parser,
-    TextSpan,
+    Yagi.Parser,
     Yagi.Lang,
-    PrettyPrint,
-    RecursionSchemes,
-    ExprF
-
-library yagi-lib
-  hs-source-dirs:  src
-  build-depends:
-    base >=4.14 && <4.15  ,
-    containers            ,
-    extra                 ,
-    mtl                   ,
-    megaparsec            ,
-    parser-combinators    ,
-    text
-  default-language:    Haskell2010
-  other-modules:
-    Parser,
     TextSpan,
-    Yagi.Lang,
     PrettyPrint,
     RecursionSchemes,
     ExprF
 
 executable parser
   hs-source-dirs:      src
-  main-is:             Parser.hs
-  ghc-options: -main-is Parser
+  main-is:             Yagi/Parser.hs
+  default-language:    Haskell2010
+  ghc-options: -main-is Yagi.Parser
   build-depends:
     base >=4.14 && <4.15  ,
     containers            ,
@@ -67,13 +69,11 @@ executable parser
     megaparsec            ,
     parser-combinators    ,
     text
-  default-language:    Haskell2010
   other-modules:
-    TextSpan,
     Yagi.Lang,
+    TextSpan,
     PrettyPrint,
     ExprF
-  default-language:    Haskell2010
 
 executable textspan
   hs-source-dirs:      src

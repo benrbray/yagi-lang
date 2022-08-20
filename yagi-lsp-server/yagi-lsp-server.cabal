@@ -33,40 +33,30 @@ executable yagi-lsp-server
                      , text
                      , text-rope
                      , transformers
-  if !flag(demo)
-    buildable:         False
 
-executable example-reactor-server
-  main-is:             Reactor.hs
-  hs-source-dirs:      example
-  default-language:    Haskell2010
-  ghc-options:         -Wall -Wno-unticked-promoted-constructors
+-- executable example-reactor-server
+--   main-is:             Reactor.hs
+--   hs-source-dirs:      example
+--   default-language:    Haskell2010
+--   ghc-options:         -Wall -Wno-unticked-promoted-constructors
 
-  build-depends:       base 
-                     , aeson
-                     , co-log-core
-                     , lens >= 4.15.2
-                     , stm
-                     , prettyprinter
-                     , text
-                     , lsp
-  if !flag(demo)
-    buildable:         False
+--   build-depends:       base 
+--                      , aeson
+--                      , co-log-core
+--                      , lens >= 4.15.2
+--                      , stm
+--                      , prettyprinter
+--                      , text
+--                      , lsp
 
-executable example-simple-server
-  main-is:             Simple.hs
-  hs-source-dirs:      example
-  default-language:    Haskell2010
-  ghc-options:         -Wall -Wno-unticked-promoted-constructors
-  build-depends:       base
-                     , lsp
-                     , text
-  if !flag(demo)
-    buildable:         False
-
-flag demo
-  description: Build the demo executables
-  default:     True
+-- executable example-simple-server
+--   main-is:             Simple.hs
+--   hs-source-dirs:      example
+--   default-language:    Haskell2010
+--   ghc-options:         -Wall -Wno-unticked-promoted-constructors
+--   build-depends:       base
+--                      , lsp
+--                      , text
 
 source-repository head
   type:     git

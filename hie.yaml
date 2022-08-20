@@ -1,6 +1,8 @@
 cradle:
   cabal:
-    - path: "./yagi-lang"
-      component: "lib:yagi-lib"
+    - path: "./yagi-lang/src"
+      component: "lib:yagi-lang"
+    - path: "./yagi-lang/yagi"
+      component: "exe:yagi"
     - path: "./yagi-lsp-server"
       component: "exe:yagi-lsp-server"
