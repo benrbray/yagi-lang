@@ -1,0 +1,101 @@
+{
+	"name": "yagi-lsp-client",
+	"description": "language client for the yagi-lsp-server",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.63.0"
+	},
+	"keywords": [
+		"language",
+		"haskell",
+		"lsp"
+	],
+	"categories": [
+		"Programming Languages"
+	],
+	"activationEvents": [
+		"onLanguage:yagi"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"languages": [
+			{
+				"id": "yagi",
+				"aliases": [
+					"Yagi",
+					"yagi"
+				],
+				"extensions": [
+					".yagi"
+				]
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Yagi",
+			"properties": {
+				"yagi.logLevel.server": {
+					"scope": "resource",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "verbose",
+					"description": "Traces the communication between VS Code and the language server."
+				},
+				"yagi.logLevel.client": {
+					"scope": "resource",
+					"type": "string",
+					"enum": [
+						"off",
+						"error",
+						"info",
+						"debug"
+					],
+					"default": "debug",
+					"description": "Sets the log level for the client side."
+				},
+				"yagi.logFile": {
+					"scope": "resource",
+					"type": "string",
+					"default": "",
+					"description": "If set, redirects the logs to a file."
+				},
+				"yagi.serverExecutablePath": {
+					"scope": "resource",
+					"type": "string",
+					"default": "~/.cabal/bin/yagi-lsp-server",
+					"markdownDescription": "Manually set a language server executable. Can be something on the $PATH or the full path to the executable itself. Works with `~,` `${HOME}` and `${workspaceFolder}`."
+				},
+				"yagi.serverExtraArgs": {
+					"scope": "resource",
+					"type": "string",
+					"default": "",
+					"markdownDescription": "Pass additional arguments to the language server."
+				},
+				"yagi.wibble": {
+					"scope": "resource",
+					"type": "string",
+					"default": "foo",
+					"markdownDescription": "Wibble wobble jiggle joggle"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"compile": "tsc",
+		"watch": "tsc --watch"
+	},
+	"dependencies": {
+		"@types/which": "^2.0.1",
+		"vscode-languageclient": "^7.0.0",
+		"which": "^2.0.2"
+	},
+	"devDependencies": {
+		"@types/node": "^18.6.1",
+		"@types/vscode": "^1.63.0",
+		"@vscode/test-electron": "^2.1.2"
+	}
+}
