@@ -9,17 +9,10 @@ module YagiServer (
 ) where
 
 -- text
-import           Data.Text (Text)
 import qualified Data.Text as T
 
 -- json
 import qualified Data.Aeson as Aeson
-import Data.Aeson
-    ( FromJSON (..)
-    , (.!=)
-    , (.:)
-    , (.:?)
-    )
 
 -- misc
 import           Data.Default (Default (def))
@@ -30,8 +23,6 @@ import qualified System.Exit as Exit
 
 -- monad transformers
 import           Control.Monad.IO.Class             (liftIO)
-import           Control.Monad.Trans.Except         (ExceptT)
-import           Control.Monad.Trans.State.Strict   (StateT)
 import qualified Control.Monad.Trans.Except       as Except
 import qualified Control.Monad.Trans.State.Strict as State
 
