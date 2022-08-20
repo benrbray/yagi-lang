@@ -34,7 +34,7 @@ import Data.Tuple.Extra
 
 import qualified TextSpan as TS
 
-import YagiLang
+import Yagi.Lang
 import Data.Char
 import PrettyPrint
 

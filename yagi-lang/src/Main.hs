@@ -29,7 +29,7 @@ import Control.Monad.Except
 import Data.Maybe
 
 -- project imports
-import YagiLang
+import Yagi.Lang
 
 ------------------------------------------------------------
 

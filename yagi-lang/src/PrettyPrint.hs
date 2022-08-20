@@ -6,7 +6,7 @@ module PrettyPrint where
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import YagiLang
+import Yagi.Lang
 
 showText :: Show a => a -> Text
 showText = T.pack . show 
