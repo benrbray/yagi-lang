@@ -1,6 +1,6 @@
 # `yagi`
 
-`yagi` is an experimental, dependently-typed programming language, still in the very early stages.  The project consists of three parts:
+`yagi` is an experimental, dependently-typed programming language, still in the *"primordial ooze"* phase of development.  The project consists of three parts:
 
 * `yagi-lang` defines the `yagi` syntax, parser, and typechecker
 * `yagi-lsp-server` is a language server for `yagi` built with the [`lsp`](https://hackage.haskell.org/package/lsp) package
