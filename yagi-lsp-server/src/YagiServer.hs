@@ -62,6 +62,7 @@ run = do
   let staticHandlers =
         mconcat
           [ initializedHandler
+          , hoverHandler
           ]
 
   let interpretHandler :: LSP.LanguageContextEnv ServerConfig -> (HandlerM <~> IO)
@@ -98,9 +99,26 @@ run = do
               backward = liftIO
 
   let options = def
+        { LSP.textDocumentSync = Just syncOptions }
 
   exitCode <- LSP.runServer ServerDefinition{..}
 
   case exitCode of
     0 -> return ()
     n -> Exit.exitWith (ExitFailure n)
+
+
+------------------------------------------------------------
+
+{-| The `Language.Haskell.LSP.VFS` module of `haskell-lsp` will automatically
+    manage [text document synchronization](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_synchronization)
+    for us, but we need to inform the client about which events we expect to receive.
+-}
+syncOptions :: J.TextDocumentSyncOptions
+syncOptions = J.TextDocumentSyncOptions
+  { J._openClose         = Just True
+  , J._change            = Just J.TdSyncIncremental
+  , J._willSave          = Just False
+  , J._willSaveWaitUntil = Just False
+  , J._save              = Just $ J.InR $ J.SaveOptions $ Just False
+  }

@@ -8,13 +8,11 @@ version:             0.1.0.0
 -- description:
 -- bug-reports:
 -- license:
-license-file:        LICENSE
 author:              Benjamin Bray
 maintainer:          benrbray@gmail.com
 -- copyright:
 -- category:
 build-type:          Simple
-extra-source-files:  CHANGELOG.md
 
 library
   hs-source-dirs:  src
@@ -29,9 +27,9 @@ library
   default-language:    Haskell2010
   exposed-modules:
     Yagi.Lang,
-    Yagi.Parser
+    TextSpan
   other-modules:
-    TextSpan,
+    Yagi.Parser,
     PrettyPrint,
     RecursionSchemes,
     ExprF
@@ -46,66 +44,60 @@ executable yagi
     mtl                   ,
     megaparsec            ,
     parser-combinators    ,
-    text
-  default-language:    Haskell2010
-  other-modules:
-    Yagi.Parser,
-    Yagi.Lang,
-    TextSpan,
-    PrettyPrint,
-    RecursionSchemes,
-    ExprF
-
-executable parser
-  hs-source-dirs:      src
-  main-is:             Yagi/Parser.hs
-  default-language:    Haskell2010
-  ghc-options: -main-is Yagi.Parser
-  build-depends:
-    base >=4.14 && <4.15  ,
-    containers            ,
-    extra                 ,
-    mtl                   ,
-    megaparsec            ,
-    parser-combinators    ,
-    text
-  other-modules:
-    Yagi.Lang,
-    TextSpan,
-    PrettyPrint,
-    ExprF
-
-executable textspan
-  hs-source-dirs:      src
-  main-is:             TextSpan.hs
-  ghc-options: -main-is TextSpan
-  other-modules:
-    Yagi.Lang,
-    PrettyPrint
-  -- other-extensions:
-  build-depends:
-    base >=4.14 && <4.15,
-    text,
-    mtl,
-    containers,
-    megaparsec,
-    parser-combinators,
-    extra
-  -- hs-source-dirs:
+    text                  ,
+    yagi-lang
   default-language:    Haskell2010
 
-executable lexerexample
-  hs-source-dirs:      src
-  main-is:             LexerExample.hs
-  ghc-options: -main-is LexerExample
-  other-modules: ParseUrls
-  -- other-extensions:
-  build-depends:
-    base >=4.14 && <4.15,
-    text,
-    mtl,
-    containers,
-    megaparsec,
-    parser-combinators
-  -- hs-source-dirs:
-  default-language:    Haskell2010
+-- executable parser
+--   hs-source-dirs:      src
+--   main-is:             Yagi/Parser.hs
+--   default-language:    Haskell2010
+--   ghc-options: -main-is Yagi.Parser
+--   build-depends:
+--     base >=4.14 && <4.15  ,
+--     containers            ,
+--     extra                 ,
+--     mtl                   ,
+--     megaparsec            ,
+--     parser-combinators    ,
+--     text
+--   other-modules:
+--     Yagi.Lang,
+--     TextSpan,
+--     PrettyPrint,
+--     ExprF
+
+-- executable textspan
+--   hs-source-dirs:      src
+--   main-is:             TextSpan.hs
+--   ghc-options: -main-is TextSpan
+--   other-modules:
+--     Yagi.Lang,
+--     PrettyPrint
+--   -- other-extensions:
+--   build-depends:
+--     base >=4.14 && <4.15,
+--     text,
+--     mtl,
+--     containers,
+--     megaparsec,
+--     parser-combinators,
+--     extra
+--   -- hs-source-dirs:
+--   default-language:    Haskell2010
+
+-- executable lexerexample
+--   hs-source-dirs:      src
+--   main-is:             LexerExample.hs
+--   ghc-options: -main-is LexerExample
+--   other-modules: ParseUrls
+--   -- other-extensions:
+--   build-depends:
+--     base >=4.14 && <4.15,
+--     text,
+--     mtl,
+--     containers,
+--     megaparsec,
+--     parser-combinators
+--   -- hs-source-dirs:
+--   default-language:    Haskell2010

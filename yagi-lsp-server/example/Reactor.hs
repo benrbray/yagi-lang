@@ -43,7 +43,7 @@ import           Data.Text.Prettyprint.Doc
 import           GHC.Generics (Generic)
 import           Language.LSP.Server
 import           System.IO
-import           Language.LSP.Diagnostics
+import Language.LSP.Diagnostics ( partitionBySource )
 import           Language.LSP.Logging (defaultClientLogger)
 import qualified Language.LSP.Types            as J
 import qualified Language.LSP.Types.Lens       as J

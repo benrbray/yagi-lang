@@ -1,6 +1,9 @@
 {-# LANGUAGE ExplicitNamespaces #-}
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Handlers (
     hoverHandler
@@ -13,21 +16,27 @@ import qualified Data.Text as T
 
 -- monad transformers
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Except (catchE, throwE)
 
 -- control
-import Control.Lens (assign, modifying, use, (^.))
+import Control.Lens ((^.))
 
 -- lsp
 import Language.LSP.Types.Lens
     ( HasParams(params), HasTextDocument(textDocument), HasUri(uri) )
 import qualified Language.LSP.Types as J
+import Language.LSP.Types (Uri)
 import qualified Language.LSP.Server as LSP
+import qualified Language.LSP.Types.Lens       as J -- todo
+import           Control.Lens hiding (Iso) -- todo
+import qualified Language.LSP.VFS as LSP
 
 -- yagi-lsp-server
 import State
+import Files
 
 -- yagi-lang
-import Yagi.Lang
+import TextSpan (parse, termAtPos, pattern GetSpan)
 
 ------------------------------------------------------------
 
@@ -41,11 +50,45 @@ initializedHandler =
 
 hoverHandler :: LSP.Handlers HandlerM
 hoverHandler =
-  LSP.requestHandler J.STextDocumentHover $ \request respond -> do
-    let uri_ = request^.params.textDocument.uri
-    pure ()
+  LSP.requestHandler J.STextDocumentHover $ \request respond ->
+    handleErrorWithDefault respond Nothing $ do
+      let J.HoverParams _doc pos _workDone = request ^. J.params
+          J.Position _line col = pos
+          uri_ = _doc^.uri
+      
+      expr <- loadFile uri_
+      let GetSpan a b term = termAtPos (fromIntegral col) expr
+
+      let _range = Just $ J.Range
+            (J.Position 0 (fromIntegral a))
+            (J.Position 0 (fromIntegral b))
+
+      let _contents = J.HoverContents (J.MarkupContent J.MkPlainText (T.pack $ show term))
+      respond (Right (Just J.Hover{ _contents, _range }))
 
 ------------------------------------------------------------
+
+handleErrorWithDefault :: forall a1 a2 b. 
+  (Either a1 b -> HandlerM a2)  -- action to attempt
+  -> b                             -- default response value
+  -> HandlerM a2                   -- 
+  -> HandlerM a2
+handleErrorWithDefault respond _default = flip catchE handler
+  where
+    handler :: (Severity, Text) -> HandlerM a2
+    handler (Log, _message) = do
+      let _xtype = J.MtLog
+      liftLSP $ LSP.sendNotification J.SWindowLogMessage J.LogMessageParams{..}
+      respond (Right _default)
+    handler (severity_, _message) = do
+      let _xtype = case severity_ of
+            Error   -> J.MtError
+            Warning -> J.MtWarning
+            Info    -> J.MtInfo
+            Log     -> J.MtLog
+
+      liftLSP $ LSP.sendNotification J.SWindowShowMessage J.ShowMessageParams{..}
+      respond (Right _default)
 
 -- didOpenTextDocumentHandler :: LSP.Handlers HandlerM
 -- didOpenTextDocumentHandler =

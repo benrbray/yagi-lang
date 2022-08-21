@@ -15,6 +15,9 @@ module TextSpan
   , TextSpan(tsStart, tsEnd, tsText)
   , textSpan, textSpanFrom
   , main
+  , parse, termAtPos
+  , ExprWithSpan(..), ExprWithSpanF(..), WithSpan(..)
+  , pattern GetSpan
   )
 where
 
@@ -337,6 +340,10 @@ testSearch n expr = do
   let y = map (exprName . (`termAtPos` expr)) x
   traverse_ print y
 
+parse :: Text -> Either (MP.ParseErrorBundle TextSpan Void) ExprWithSpan
+parse t = do
+  let result = MP.runParser pNode "[filename]" (textSpan t)
+  result
 
 main :: IO ()
 main = do

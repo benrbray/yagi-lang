@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeFamilies      #-}
 {-# LANGUAGE InstanceSigs      #-}
 {-# LANGUAGE TupleSections     #-}
+
 module Yagi.Parser where
 
 -- megaparsec
