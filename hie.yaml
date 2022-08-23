@@ -4,6 +4,8 @@ cradle:
       component: "lib:yagi-lang"
     - path: "./yagi-lang/yagi"
       component: "exe:yagi"
+    - path: "./yagi-lang/yagi/Test.hs"
+      component: "exe:test"
     - path: "./yagi-lsp-server"
       component: "exe:yagi-lsp-server"
     - path: "./yagi-lsp-server/example/Reactor.hs"

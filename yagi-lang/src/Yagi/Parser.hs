@@ -5,7 +5,6 @@
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE TypeFamilies      #-}
 {-# LANGUAGE InstanceSigs      #-}
-{-# LANGUAGE TupleSections     #-}
 
 module Yagi.Parser where
 
@@ -130,12 +129,10 @@ data BindMany = BindMany
   , bmTpe :: Expr
   } deriving (Eq, Show)
 
---               names  type
 bind1 :: Parser BindMany
 bind1 = BindMany <$> vars <*> expr
   where vars = (some namedSym <* symbolColon) :: Parser [Symbol]
 
---                names  type
 binds :: Parser [BindMany]
 binds = some (parens bind1)
 

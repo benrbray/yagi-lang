@@ -27,11 +27,14 @@ library
   default-language:    Haskell2010
   exposed-modules:
     Yagi.Lang,
-    TextSpan
+    Yagi.ParserNew,
+    TextSpan,
+    TextSpanLineCol
   other-modules:
     Yagi.Parser,
+    Yagi.RecursionSchemes,
     PrettyPrint,
-    RecursionSchemes,
+    Example.RecursionSchemes,
     ExprF
 
 executable yagi
@@ -48,56 +51,17 @@ executable yagi
     yagi-lang
   default-language:    Haskell2010
 
--- executable parser
---   hs-source-dirs:      src
---   main-is:             Yagi/Parser.hs
---   default-language:    Haskell2010
---   ghc-options: -main-is Yagi.Parser
---   build-depends:
---     base >=4.14 && <4.15  ,
---     containers            ,
---     extra                 ,
---     mtl                   ,
---     megaparsec            ,
---     parser-combinators    ,
---     text
---   other-modules:
---     Yagi.Lang,
---     TextSpan,
---     PrettyPrint,
---     ExprF
-
--- executable textspan
---   hs-source-dirs:      src
---   main-is:             TextSpan.hs
---   ghc-options: -main-is TextSpan
---   other-modules:
---     Yagi.Lang,
---     PrettyPrint
---   -- other-extensions:
---   build-depends:
---     base >=4.14 && <4.15,
---     text,
---     mtl,
---     containers,
---     megaparsec,
---     parser-combinators,
---     extra
---   -- hs-source-dirs:
---   default-language:    Haskell2010
-
--- executable lexerexample
---   hs-source-dirs:      src
---   main-is:             LexerExample.hs
---   ghc-options: -main-is LexerExample
---   other-modules: ParseUrls
---   -- other-extensions:
---   build-depends:
---     base >=4.14 && <4.15,
---     text,
---     mtl,
---     containers,
---     megaparsec,
---     parser-combinators
---   -- hs-source-dirs:
---   default-language:    Haskell2010
+executable test
+  hs-source-dirs:  yagi
+  main-is:         Test.hs
+  ghc-options:     -main-is Test
+  build-depends:
+    base >=4.14 && <4.15  ,
+    containers            ,
+    extra                 ,
+    mtl                   ,
+    megaparsec            ,
+    parser-combinators    ,
+    text                  ,
+    yagi-lang
+  default-language:    Haskell2010

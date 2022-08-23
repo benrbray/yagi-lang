@@ -9,7 +9,7 @@
 {-# LANGUAGE InstanceSigs        #-}
 {-# LANGUAGE FlexibleInstances   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module RecursionSchemes where
+module Example.RecursionSchemes where
 
 import Control.Arrow
 import Data.Foldable
