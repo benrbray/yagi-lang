@@ -28,6 +28,7 @@ library
   exposed-modules:
     Yagi.Lang,
     Yagi.ParserNew,
+    Util.PrettyPrint,
     TextSpan,
   other-modules:
     Yagi.Parser,

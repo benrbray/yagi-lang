@@ -295,16 +295,6 @@ pNode = do
 
 ------------------------------------------------------------
 
-anaExpr :: (b -> ExprF b) -> (b -> Mu ExprF)
-anaExpr = ana
-
-foo :: Int -> ExprF Int
-foo 0 = FLeaf "leaf"
-foo n = FNode (n-1) 0
-
-buildTree :: Int -> Mu ExprF
-buildTree = ana foo
-
 showExprF :: Show a => ExprF a -> String
 showExprF (FLeaf t) = T.unpack t
 showExprF (FNode tl tr) = "(" ++ show tl ++ "," ++ show tr ++ ")"

@@ -1,12 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Test where
 
-import qualified TextSpanLineCol as TS
+import qualified TextSpan as TS
 import qualified Text.Megaparsec as MP
 import Data.Char as C
 import Data.Void
 import qualified Text.Megaparsec.Error as MP
 import Data.Data
+
+import qualified Yagi.ParserNew as P
+import Util.PrettyPrint
 
 parseTest p t = do
   let r = MP.runParser p "<file>" (TS.textSpan t)
@@ -14,11 +17,7 @@ parseTest p t = do
   case r of
     Left peb -> putStrLn $ MP.errorBundlePretty peb
     Right e -> do
-      let x = MP.chunkLength (Proxy :: Proxy TS.TextSpan) e
-      print $ "Length: " ++ show x
-      let y = MP.chunkToTokens (Proxy :: Proxy TS.TextSpan) e
-      print $ "Tokens: " ++ show y
-      print e
+      prettyPrint e
 
 type Parser = MP.Parsec Void TS.TextSpan
 
@@ -29,15 +28,14 @@ main :: IO ()
 main = do
   putStrLn "hello, world!"
 
+  parseTest P.variable "foo bar baz"
+  parseTest P.universe "fType100 bar baz"
 
-  parseTest TS.name "foo bar baz"
-  parseTest (TS.string "foo\nbar") "foo\nbar baz"
+  --parseTest (TS.string "foo\nbar") "foo\nbar baz"
+  --parseTest p "foo bar baz"
 
-
-  parseTest p "foo bar baz"
-
-  print $ TS.posFrom (TS.Pos 0 0) ""
-  print $ TS.posFrom (TS.Pos 0 0) "\n"
-  print $ TS.posFrom (TS.Pos 3 2) "foo\nbbbb\nbaz\n\nccc"
+  -- print $ TS.posFrom (TS.Pos 0 0) ""
+  -- print $ TS.posFrom (TS.Pos 0 0) "\n"
+  -- print $ TS.posFrom (TS.Pos 3 2) "foo\nbbbb\nbaz\n\nccc"
 
   pure ()
