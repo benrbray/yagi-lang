@@ -20,7 +20,7 @@ import qualified Language.LSP.VFS        as LSP
 import State
 
 -- yagi-lang
-import TextSpan (parse, ExprWithSpan)
+import qualified TextSpan as TS
 
 ------------------------------------------------------------
 
@@ -31,9 +31,9 @@ readUri uri = do
     Just (LSP.VirtualFile _ _ rope) -> return (Rope.toText rope)
     Nothing -> throwE (Error, "Path" <> T.pack (show uri) <> " not found in VFS")
 
-loadFile :: Uri -> HandlerM ExprWithSpan
+loadFile :: Uri -> HandlerM TS.ParseResult
 loadFile uri = do
   txt <- readUri uri
-  case parse txt of
+  case TS.parse txt of
     Right expr -> return expr
-    Left _ -> throwE (Error, "Parse failure")
+    Left errorMsg -> throwE (Error, T.unlines ["Parse Failure:", errorMsg])
