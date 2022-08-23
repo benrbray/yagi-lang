@@ -14,7 +14,6 @@ module TextSpan
   ( CharWithPos(..)
   , TextSpan(..)
   , textSpan, textSpanFrom
-  , main
   , parse, termAtPos
   , ExprWithSpan(..), ExprWithSpanF(..), WithSpan(..)
   , pattern GetSpan
@@ -345,22 +344,11 @@ finish = cata go
         go (Next e) = e
 
 -- hylomorphism
+-- TODO (Ben @ 2022/08/23) use hylo from recursion-schemes
 termAtPos :: Int -> ExprWithSpan -> ExprWithSpan
 termAtPos p expr = finish (prune p expr)
 
 ------------------------------------------------------------
-
-parseTest p t = MP.parseTest p (textSpan t)
-
-exprName :: ExprWithSpan -> Text
-exprName (InF (ExprWithSpanF (WithSpan _ _ (FLeaf t)))) = t
-exprName (InF (ExprWithSpanF (WithSpan _ _ (FNode _ _)))) = "node"
-
-testSearch :: Int -> ExprWithSpan -> IO ()
-testSearch n expr = do
-  let x = [0.. n]
-  let y = map (exprName . (`termAtPos` expr)) x
-  traverse_ print y
 
 data ParseResult = ParseResult
   { parsedExpr  :: ExprWithSpan
@@ -407,20 +395,3 @@ parse t =
     Right x -> Right $ ParseResult x lines
   where result = MP.runParser pNode "[filename]" (textSpan t)
         lines = map ( (1+) . T.length ) $ T.lines t
-
-main :: IO ()
-main = do
-  let example = "((foo,bar),(baz,(qux,bat))))"
-  let n = T.length example
-  let result = MP.runParser pNode "" (textSpan example)
-
-  case result of
-    Left peb -> do
-      putStrLn $ MP.errorBundlePretty peb
-    Right expr -> testSearch n expr
-
-  -- print $ buildTree 0
-  -- print $ buildTree 1
-  -- print $ buildTree 5
-
-  pure ()
