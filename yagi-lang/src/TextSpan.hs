@@ -12,17 +12,28 @@
 
 module TextSpan
   ( CharWithPos(..)
-  , TextSpan(tsStart, tsEnd, tsText)
+  , TextSpan(..)
   , textSpan, textSpanFrom
   , main
   , parse, termAtPos
   , ExprWithSpan(..), ExprWithSpanF(..), WithSpan(..)
   , pattern GetSpan
+  , cons
+  , lexeme, symbol, satisfy, name
+  , decimal
+  , isAlpha, isAlphaNum
+  , posFromOffset, offsetFromPos
+  , ParseResult(..)
+  , Pos(..)
   )
 where
 
 -- megaparsec
-import Text.Megaparsec (Parsec, Stream, VisualStream, TraversableStream, PosState(..))
+import Text.Megaparsec (
+    Parsec, Stream, VisualStream, TraversableStream,
+    PosState(..),
+    (<?>)
+  )
 import qualified Text.Megaparsec as MP
 import qualified Text.Megaparsec.Char as MP
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -34,14 +45,17 @@ import Control.Monad (void, ap)
 
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.String (IsString(..))
 import Data.Void
 import Data.Proxy
 --import Data.Tuple.Extra
 import qualified Data.Char          as C
 import qualified Data.Set           as Set
 import qualified Data.List.NonEmpty as NE
-import Data.Foldable (traverse_)
 import Control.Arrow
+
+import Yagi.RecursionSchemes
+import Data.Foldable ( Foldable(foldl'), traverse_ )
 
 ------------------------------------------------------------
 
@@ -55,6 +69,10 @@ data TextSpan = TextSpan
   , tsEnd   :: Int -- exclusive from 0
   , tsText  :: Text
   } deriving (Eq, Show, Ord)
+
+instance IsString TextSpan where
+  fromString :: String -> TextSpan
+  fromString s = TextSpan 0 0 (T.pack s)
 
 data WithSpan a = WithSpan
   { spanStart :: Int
@@ -155,7 +173,7 @@ type Parser = Parsec Void TextSpan
 type ParserWithSpan a = Parser (WithSpan a)
 
 liftCharPredicate :: (Char -> Bool) -> (CharWithPos -> Bool)
-liftCharPredicate p = (p . cwpChar)
+liftCharPredicate p = p . cwpChar
 
 isSpace = liftCharPredicate C.isSpace
 isAlpha = liftCharPredicate C.isAlphaNum
@@ -182,21 +200,38 @@ char c = satisfy (== c)
 
 -- spaces and newlines
 scn :: Parser ()
-scn = L.space space1 empty empty
+--scn = L.space space1 empty empty
+scn = L.space (void $ MP.some (char ' ' <|> char '\t' <|> char '\n')) empty empty
 
 -- spaces only, not newlines
 sc :: Parser ()
 sc = L.space (void $ MP.some (char ' ' <|> char '\t')) empty empty
 
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
+lexeme = L.lexeme scn -- TODO sc not scn
 {-# INLINEABLE lexeme #-}
 
 symbol ::
   Text ->  -- symbol to parse
   Parser TextSpan
-symbol = L.lexeme sc . string
+symbol = L.lexeme scn . string -- TODO sc not scn
 {-# INLINEABLE symbol #-}
+
+------------------------------------------------------------
+
+decimal :: (Num a) => Parser (TextSpan, a)
+decimal = decimal_ <?> "integer"
+{-# INLINEABLE decimal #-}
+
+-- | A non-public helper to parse decimal integers.
+--   (adapted from `Text.Megaparsec.Char.Lexer`)
+decimal_ :: (Num a) => Parser (TextSpan, a)
+decimal_ = toSnd mkNum <$> digits
+  where
+    digits :: Parser TextSpan
+    digits = MP.takeWhile1P (Just "digit") (liftCharPredicate C.isDigit)
+    mkNum = foldl' step 0 . MP.chunkToTokens (Proxy :: Proxy TextSpan)
+    step a c = a * 10 + fromIntegral ((C.digitToInt . cwpChar) c)
 
 ------------------------------------------------------------
 
@@ -210,8 +245,6 @@ data ExprF a
   = FLeaf Text
   | FNode a a
   deriving (Eq, Show, Functor)
-
-newtype Mu f = InF { outF :: f (Mu f) }
 
 newtype ExprWithSpanF a
   = ExprWithSpanF (WithSpan (ExprF a))
@@ -238,13 +271,14 @@ getSpan (InF (ExprWithSpanF ws)) = (spanStart ws, spanEnd ws)
 
 ------------------------------------------------------------
 
-cons :: (CharWithPos, TextSpan) -> TextSpan
-cons (CharWithPos a x, TextSpan b c t) = TextSpan a c (T.cons x t)
+-- cons :: (CharWithPos, TextSpan) -> TextSpan
+-- cons (CharWithPos a x, TextSpan b c t) = TextSpan a c (T.cons x t)
+
+cons :: CharWithPos -> TextSpan -> TextSpan
+cons (CharWithPos a x) (TextSpan b c t) = TextSpan a c (T.cons x t)
 
 name :: Parser TextSpan
-name = cons <$> ident
-  where ident :: Parser (CharWithPos, TextSpan)
-        ident   = (,) <$> MP.satisfy isAlpha <*> MP.takeWhileP Nothing isAlphaNum
+name = cons <$> MP.satisfy isAlpha <*> MP.takeWhileP Nothing isAlphaNum
 
 pLeaf :: Parser ExprWithSpan
 pLeaf = go <$> name
@@ -261,18 +295,6 @@ pNode = do
   return $ exprWithSpan a b (FNode left right)
 
 ------------------------------------------------------------
-
-cata :: Functor f => (f b -> b) -> Mu f -> b
-cata fn =
-  outF                -- peel off one layer of the Expr
-  >>> fmap (cata fn)  -- apply `mystery fn` to every subexpr
-  >>> fn              -- apply fn to the top-level
-
-ana :: forall b f. Functor f => (b -> f b) -> (b -> Mu f)
-ana fn =
-  fn                -- wrap b in one more layer
-  >>> fmap (ana fn) -- ???
-  >>> InF           -- convert the wrapped value to a value of the fix type
 
 anaExpr :: (b -> ExprF b) -> (b -> Mu ExprF)
 anaExpr = ana
@@ -340,10 +362,51 @@ testSearch n expr = do
   let y = map (exprName . (`termAtPos` expr)) x
   traverse_ print y
 
-parse :: Text -> Either (MP.ParseErrorBundle TextSpan Void) ExprWithSpan
-parse t = do
-  let result = MP.runParser pNode "[filename]" (textSpan t)
-  result
+data ParseResult = ParseResult
+  { parsedExpr  :: ExprWithSpan
+  , parsedLines :: [Int]
+  } deriving (Show, Eq)
+
+data Pos = Pos
+  { posLine :: !Int -- from 0
+  , posCol  :: !Int -- from 0
+  } deriving (Eq, Ord)
+
+instance Show Pos where
+  show :: Pos -> String
+  show Pos{..} = "l" ++ show posLine ++ "c" ++ show posCol
+
+offsetFromPos :: ParseResult -> Pos -> Int
+offsetFromPos ParseResult{..} = offsetFromPos' parsedLines
+
+-- TODO make efficient with binary tree
+offsetFromPos' :: [Int] -> Pos -> Int
+offsetFromPos' _  (Pos 0 c) = c
+offsetFromPos' ls (Pos l c) = sum (take l ls) + c
+
+-- TODO make efficient with binary tree
+posFromOffset
+  :: ParseResult -- line lengths
+  -> Int   -- absolute offset into the string
+  -> Pos
+posFromOffset ParseResult{..} off = go 0 0 parsedLines
+  where go
+          :: Int   -- accumulator (lines consumed so far)
+          -> Int   -- accumulator (sum of line lengths so far)
+          -> [Int] -- rest
+          -> Pos
+        go l acc [] = Pos l (off - acc)  -- should not happen
+        go l acc (x:xs)
+          | off < acc + x = Pos l (off - acc)
+          | otherwise     = go (l+1) (acc + x) xs
+
+parse :: Text -> Either Text ParseResult
+parse t =
+  case result of
+    Left peb -> Left . T.pack . show $ MP.errorBundlePretty peb
+    Right x -> Right $ ParseResult x lines
+  where result = MP.runParser pNode "[filename]" (textSpan t)
+        lines = map ( (1+) . T.length ) $ T.lines t
 
 main :: IO ()
 main = do

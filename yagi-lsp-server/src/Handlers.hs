@@ -36,7 +36,8 @@ import State
 import Files
 
 -- yagi-lang
-import TextSpan (parse, termAtPos, pattern GetSpan)
+import qualified TextSpan as TS
+--import qualified TextSpanLineCol as TS
 
 ------------------------------------------------------------
 
@@ -48,22 +49,36 @@ initializedHandler =
     liftLSP $ LSP.sendNotification J.SWindowShowMessage J.ShowMessageParams{..}
     return ()
 
+
+-- NOTE: for TextSpan
+-- positionLsp2Yagi :: TS.ParseResult -> J.Position -> Int
+-- positionLsp2Yagi (J.Position l c) = 0
+--   where x = TS.offsetFromPos
+-- positionYagi2Lsp :: Int -> J.Position
+-- positionYagi2Lsp (TS.Pos l c) = J.Position (fromIntegral l) (fromIntegral c)
+
+
+-- NOTE: for TextSpanLineCol
+positionLsp2Yagi :: J.Position -> TS.Pos
+positionLsp2Yagi (J.Position l c) = TS.Pos (fromIntegral l) (fromIntegral c)
+positionYagi2Lsp :: TS.Pos -> J.Position
+positionYagi2Lsp (TS.Pos l c) = J.Position (fromIntegral l) (fromIntegral c)
+
 hoverHandler :: LSP.Handlers HandlerM
 hoverHandler =
   LSP.requestHandler J.STextDocumentHover $ \request respond ->
     handleErrorWithDefault respond Nothing $ do
       let J.HoverParams _doc pos _workDone = request ^. J.params
-          J.Position _line col = pos
           uri_ = _doc^.uri
       
-      expr <- loadFile uri_
-      let GetSpan a b term = termAtPos (fromIntegral col) expr
-
-      let _range = Just $ J.Range
-            (J.Position 0 (fromIntegral a))
-            (J.Position 0 (fromIntegral b))
-
+      result@(TS.ParseResult expr _) <- loadFile uri_
+      let off = TS.offsetFromPos result (positionLsp2Yagi pos)
+      let TS.GetSpan a b term = TS.termAtPos off expr
+      let leftPos = TS.posFromOffset result a
+      let rightPos = TS.posFromOffset result b
+      let _range = Just $ J.Range (positionYagi2Lsp leftPos) (positionYagi2Lsp rightPos)
       let _contents = J.HoverContents (J.MarkupContent J.MkPlainText (T.pack $ show term))
+
       respond (Right (Just J.Hover{ _contents, _range }))
 
 ------------------------------------------------------------
