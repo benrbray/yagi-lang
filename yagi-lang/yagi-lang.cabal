@@ -29,7 +29,6 @@ library
     Yagi.Lang,
     Yagi.ParserNew,
     TextSpan,
-    TextSpanLineCol
   other-modules:
     Yagi.Parser,
     Yagi.RecursionSchemes,
