@@ -4,7 +4,7 @@
 {-# LANGUAGE ExplicitForAll     #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
-module LexerExample where
+module Example.LexerExample where
 
 -- megaparsec
 import Text.Megaparsec hiding (State, Pos, SourcePos)

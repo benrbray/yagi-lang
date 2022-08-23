@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-module ParseUrls where
+module Example.ParseUrls where
 
 import Text.Megaparsec hiding (State)
 import Text.Megaparsec.Char
