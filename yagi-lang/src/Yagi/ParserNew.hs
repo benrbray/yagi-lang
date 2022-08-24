@@ -13,9 +13,7 @@ module Yagi.ParserNew (
 ) where
 
 -- misc
-import System.IO
 import Data.Void
-import Data.Proxy
 import Data.Tuple.Extra
 
 -- text
@@ -25,15 +23,12 @@ import qualified Data.Text as T
 import qualified Data.Text.IO as T
 
 -- structures
-import Control.Applicative hiding (some, many)
 import Control.Monad (void, ap, when)
-import Data.Functor
 import Data.Foldable (traverse_)
 import qualified Data.List.NonEmpty as NE
 import Data.List.NonEmpty (NonEmpty(..))
 
 -- megaparsec, parser-combinators
-import Text.Megaparsec.Char
 import Text.Megaparsec ((<?>))
 import qualified Text.Megaparsec as MP
 import qualified Text.Megaparsec.Char.Lexer as L
@@ -42,9 +37,6 @@ import Control.Monad.Combinators (many, some)
 -- yagi-lang
 import TextSpan (TextSpan(..))
 import qualified TextSpan as TS
-import Yagi.RecursionSchemes
-import Util.PrettyPrint
-import Util.Tuple
 import Yagi.Syntax
 
 ------------------------------------------------------------

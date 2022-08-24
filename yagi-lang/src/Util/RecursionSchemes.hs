@@ -1,7 +1,7 @@
 {-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE UndecidableInstances #-}
 
-module Yagi.RecursionSchemes (
+module Util.RecursionSchemes (
   Mu(..),
   cata, ana  
 ) where

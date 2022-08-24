@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeSynonymInstances  #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PatternSynonyms       #-}
 module Yagi.Syntax where
 
 
@@ -36,7 +37,7 @@ import Control.Monad.Combinators (many, some)
 -- yagi-lang
 import TextSpan (TextSpan(..))
 import qualified TextSpan as TS
-import Yagi.RecursionSchemes
+import Util.RecursionSchemes
 import Util.PrettyPrint
 import Util.Tuple
 
@@ -132,7 +133,7 @@ instance Show p => PrettyPrint (Mu (ExprF (Span p))) where
 
 ---- position annotations ----------------------------------
 
-newtype PosOffset = PosOffset Int deriving (Show, Eq)
+newtype PosOffset = PosOffset Int deriving (Show, Eq, Ord)
 
 data PosLineCol = PosLineCol
   { posLine :: !Int
@@ -169,3 +170,51 @@ instance HasSpan p (Expr (Span p)) where
 
 instance HasSpan PosOffset TextSpan where
   getSpan TextSpan{..} = emptyOffsetSpan
+
+------------------------------------------------------------
+
+pattern GetVar s x = InF (Var s x)
+pattern GetUniverse s u = InF (Universe s u)
+pattern GetPi s bindings ctx     <- InF (Pi s     (Abstraction bindings ctx))
+pattern GetLambda s bindings ctx <- InF (Lambda s (Abstraction bindings ctx))
+pattern GetApp s l r <- InF (App s l r)
+
+------------------------------------------------------------
+
+type Result a = Mu (ResultF a)
+data ResultF a b
+  = Done a
+  | Next b
+  deriving (Show, Eq, Functor)
+
+-- anamorphism
+prune :: PosOffset -> Expr OffsetSpan -> Result (Expr OffsetSpan)
+prune v = ana go
+  where go :: Expr OffsetSpan -> ResultF (Expr OffsetSpan) (Expr OffsetSpan)
+        go expr@(GetPi _ b ctx)
+          | v >= a && v < b = Next ctx
+          | otherwise       = Done expr
+          where (Span a b) = getSpan ctx :: Span PosOffset
+        go expr@(GetLambda _ b ctx)
+          | v >= a && v < b = Next ctx
+          | otherwise       = Done expr
+          where (Span a b) = getSpan ctx :: Span PosOffset
+        go expr@(GetApp _ e1 e2)
+          | v >= a1 && v < b1 = Next e1
+          | v >= a2 && v < b2 = Next e2
+          | otherwise         = Done expr
+          where (Span a1 b1) = getSpan e1
+                (Span a2 b2) = getSpan e2
+        go expr = Done expr
+
+-- catamorphism
+finish :: Result (Expr OffsetSpan) -> Expr OffsetSpan
+finish = cata go
+  where go :: ResultF (Expr OffsetSpan) (Expr OffsetSpan) -> Expr OffsetSpan
+        go (Done e) = e
+        go (Next e) = e
+
+-- hylomorphism
+-- TODO (Ben @ 2022/08/23) use hylo from recursion-schemes
+termAtPos :: PosOffset -> Expr OffsetSpan -> Expr OffsetSpan
+termAtPos p expr = finish (prune p expr)

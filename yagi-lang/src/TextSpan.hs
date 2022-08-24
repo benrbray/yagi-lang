@@ -38,18 +38,21 @@ import Control.Applicative hiding (some, many)
 import Control.Monad (void, ap)
 
 import Data.Text (Text)
+import qualified Data.Char as C
 import qualified Data.Text as T
 import Data.String (IsString(..))
+
+-- misc
 import Data.Void
 import Data.Proxy
---import Data.Tuple.Extra
-import qualified Data.Char          as C
 import qualified Data.Set           as Set
 import qualified Data.List.NonEmpty as NE
 import Control.Arrow
 
-import Yagi.RecursionSchemes
 import Data.Foldable ( Foldable(foldl'), traverse_ )
+
+-- yagi-lang
+import Util.RecursionSchemes
 
 ------------------------------------------------------------
 

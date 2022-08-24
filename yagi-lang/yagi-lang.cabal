@@ -43,10 +43,10 @@ library
     Yagi.ParserNew,
     Util.PrettyPrint,
     Util.Tuple,
-    TextSpan,
+    Util.RecursionSchemes,
+    TextSpan
   other-modules:
     Yagi.Parser,
-    Yagi.RecursionSchemes,
     PrettyPrint,
     Example.RecursionSchemes,
     ExprF
