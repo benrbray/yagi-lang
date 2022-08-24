@@ -93,9 +93,12 @@ mkApp a b c = InF $ App a b c
 
 ---- pretty print ------------------------------------------
 
+showText :: Show s => s -> Text
+showText = T.pack . show
+
 instance PrettyPrint Ident where
   pretty (NamedIdent t)   = t
-  pretty (SynthIdent t i) = T.concat [t, "@", T.pack $ show i]
+  pretty (SynthIdent t i) = T.concat [t, "@", showText i]
   pretty Dummy            = "*"
 
 instance (PrettyPrint a) => PrettyPrint (Bindings a) where
@@ -108,19 +111,19 @@ instance (PrettyPrint a) => PrettyPrint (Bindings a) where
 
 -- show a single layer
 instance (Show p, PrettyPrint a) => PrettyPrint (ExprF (Span p) a) where
-  pretty (Var s x) = pretty x
-  pretty (Universe s u) = T.concat ["Type", T.pack $ show u]
+  pretty (Var s x) = T.concat [ pretty x , "@" , showText s ]
+  pretty (Universe s u) = T.concat ["Type", showText u, "@", showText s]
   pretty (Pi s (Abstraction bindings expr)) 
     = T.concat
       [ "(Π "  , pretty bindings
-      , " -> " , pretty expr     , ")" ] 
+      , " -> " , pretty expr     , ")" , "@", showText s ] 
   pretty (Lambda s (Abstraction bindings expr))
     = T.concat
         [ "(λ " , pretty bindings
-        , ". "  , pretty expr     , ")" ]
+        , ". "  , pretty expr     , ")", "@", showText s ]
   pretty (App s e1 e2)
     = T.concat
-        [ pretty e1, " (", pretty e2, ")"]
+        [ pretty e1, " (", pretty e2, ")", "@", showText s]
 
 -- show an entire expression
 instance Show p => Show (Mu (ExprF (Span p))) where
@@ -133,7 +136,10 @@ instance Show p => PrettyPrint (Mu (ExprF (Span p))) where
 
 ---- position annotations ----------------------------------
 
-newtype PosOffset = PosOffset { posOffset :: Int } deriving (Show, Eq, Ord)
+newtype PosOffset = PosOffset { posOffset :: Int } deriving (Eq, Ord)
+
+instance Show PosOffset where
+  show (PosOffset p) = show p
 
 data PosLineCol = PosLineCol
   { posLine :: !Int
@@ -147,7 +153,11 @@ instance Show PosLineCol where
 data Span p = Span
   { spanStart :: p
   , spanEnd   :: p
-  } deriving (Show, Eq, Ord)
+  } deriving (Eq, Ord)
+
+instance Show p => Show (Span p) where
+  show :: Span p -> String
+  show Span{..} = "[" ++ show spanStart ++ "-" ++ show spanEnd ++ "]"
 
 type OffsetSpan = Span PosOffset
 type LineColSpan = Span PosLineCol
@@ -173,7 +183,7 @@ instance HasSpan p (Expr (Span p)) where
   getSpan (InF (App s _ _)) = s
 
 instance HasSpan PosOffset TextSpan where
-  getSpan TextSpan{..} = emptyOffsetSpan
+  getSpan (TextSpan a b _) = Span (PosOffset a) (PosOffset b)
 
 ------------------------------------------------------------
 

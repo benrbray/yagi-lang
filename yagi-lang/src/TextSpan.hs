@@ -65,7 +65,7 @@ data TextSpan = TextSpan
 
 instance IsString TextSpan where
   fromString :: String -> TextSpan
-  fromString s = TextSpan 0 0 (T.pack s)
+  fromString s = TextSpan 0 (length s) (T.pack s)
 
 data WithSpan a = WithSpan
   { spanStart :: Int
