@@ -29,6 +29,7 @@ library
     Yagi.Lang,
     Yagi.ParserNew,
     Util.PrettyPrint,
+    Util.Tuple,
     TextSpan,
   other-modules:
     Yagi.Parser,

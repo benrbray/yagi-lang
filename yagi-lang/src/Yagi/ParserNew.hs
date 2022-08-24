@@ -9,10 +9,12 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Yagi.ParserNew (
   Expr(..), Ident(..), Abstraction(..),
-  variable, universe
+  variable, universe,
+  lambdaAbstraction
 ) where
 
 -- misc
@@ -47,6 +49,7 @@ import TextSpan (TextSpan(..))
 import qualified TextSpan as TS
 import Yagi.RecursionSchemes
 import Util.PrettyPrint
+import Util.Tuple
 
 ------------------------------------------------------------
 
@@ -56,10 +59,13 @@ data Ident
   | Dummy               -- used only for pretty printing
   deriving (Show, Eq, Ord)
 
+newtype Bindings a
+  = Bindings [([Ident],a)]
+  deriving (Show, Eq, Functor)
+
 data Abstraction (a :: *) = Abstraction
-  { absIdent :: Ident, -- identifier
-    absType  :: a,   -- type
-    absExpr  :: a    -- binding context
+  { absBindings :: Bindings a  -- (identifier, type)
+  , absExpr     :: a           -- binding context
   } deriving (Show, Eq, Functor)
 
 ------------------------------------------------------------
@@ -83,11 +89,11 @@ mkVar a b = InF $ Var a b
 mkUniverse :: s -> Int -> Expr s
 mkUniverse a b = InF $ Universe a b
 
-mkPi :: s -> Ident -> Expr s -> Expr s -> Expr s
-mkPi a b c d = InF $ Pi a (Abstraction b c d)
+mkPi :: s -> Bindings (Expr s) -> Expr s -> Expr s
+mkPi a b c = InF $ Pi a (Abstraction b c)
 
-mkLambda :: s -> Ident -> Expr s -> Expr s -> Expr s
-mkLambda a b c d = InF $ Lambda a (Abstraction b c d)
+mkLambda :: s -> Bindings (Expr s) -> Expr s -> Expr s
+mkLambda a b c = InF $ Lambda a (Abstraction b c)
 
 mkApp :: s -> Expr s -> Expr s -> Expr s
 mkApp a b c = InF $ App a b c
@@ -99,20 +105,26 @@ instance PrettyPrint Ident where
   pretty (SynthIdent t i) = T.concat [t, "@", T.pack $ show i]
   pretty Dummy            = "*"
 
+instance (PrettyPrint a) => PrettyPrint (Bindings a) where
+  pretty (Bindings bs)
+    = T.concat
+      [ "{", T.intercalate ", " (map go bs), "}" 
+      ]
+    where go :: ([Ident], a) -> Text
+          go (ids,e) = T.concat [ "(", T.intercalate " " $ map pretty ids, ":", pretty e, ")" ]
+
 -- show a single layer
 instance (Show p, PrettyPrint a) => PrettyPrint (ExprF (Span p) a) where
   pretty (Var s x) = pretty x
   pretty (Universe s u) = T.concat ["Type", T.pack $ show u]
-  pretty (Pi s (Abstraction x tpe expr)) 
+  pretty (Pi s (Abstraction bindings expr)) 
     = T.concat
-      [ "(Π {" , pretty x
-      , " : "  , pretty tpe
-      , "} ->" , pretty expr, ")"] 
-  pretty (Lambda s (Abstraction x tpe expr))
+      [ "(Π "  , pretty bindings
+      , " -> " , pretty expr     , ")" ] 
+  pretty (Lambda s (Abstraction bindings expr))
     = T.concat
-        [ "(λ {" , pretty x
-        , " : "  , pretty tpe
-        , "}. "  , pretty expr, ")"]
+        [ "(λ " , pretty bindings
+        , ". "  , pretty expr     , ")" ]
   pretty (App s e1 e2)
     = T.concat
         [ pretty e1, " (", pretty e2, ")"]
@@ -152,6 +164,8 @@ emptyOffsetSpan = Span (PosOffset 0) (PosOffset 0)
 
 class HasSpan p m where
   getSpan :: m -> Span p
+  withSpan :: m -> (Span p, m)
+  withSpan = toFst getSpan
 
 instance HasSpan p (Expr (Span p)) where
   getSpan (InF (Var s _)) = s
@@ -169,17 +183,26 @@ type Parser = MP.Parsec Void TextSpan
 
 ---- symbols -----------------------------------------------
 
-_fun :: Parser ()
-_fun = void $ TS.symbol "fun"
+spanOnly :: Parser TextSpan -> Parser OffsetSpan
+spanOnly ts = getSpan <$> ts
 
-_colon :: Parser ()
-_colon = void $ TS.symbol ":"
+_fun :: Parser OffsetSpan
+_fun = spanOnly $ TS.symbol "fun"
 
-_colonEqual :: Parser ()
-_colonEqual = void $ TS.symbol ":="
+_colon :: Parser OffsetSpan
+_colon = spanOnly $ TS.symbol ":"
 
-_arrow :: Parser ()
-_arrow = void $ TS.symbol "->"
+_colonEqual :: Parser OffsetSpan
+_colonEqual = spanOnly $ TS.symbol ":="
+
+_arrow :: Parser OffsetSpan
+_arrow = spanOnly $ TS.symbol "->"
+
+_leftparen :: Parser OffsetSpan
+_leftparen = spanOnly $ TS.symbol "("
+
+_rightparen :: Parser OffsetSpan
+_rightparen = spanOnly $ TS.symbol ")"
 
 ---- combinators -------------------------------------------
 
@@ -192,7 +215,7 @@ many1 p = (:|) <$> p <*> many p
 ------------------------------------------------------------
 
 ident :: Parser (OffsetSpan, Ident)
-ident = name >>= check
+ident = TS.lexeme name >>= check
   where
     name :: Parser TextSpan
     name = TS.cons <$> MP.satisfy TS.isAlpha <*> MP.takeWhileP Nothing TS.isAlphaNum
@@ -237,45 +260,35 @@ universe = wrap <$> (TS.symbol "Type" *> TS.lexeme TS.decimal <?> "universe")
 ---- function syntax ---------------------------------------
 
 -- intermediate type used when parsing function abstractions
+-- TODO can we just use `Bindings` type directly?
 data BindMany = BindMany
   { bmNames :: [(OffsetSpan, Ident)]
-  , bmType  :: Expr OffsetSpan 
+  , bmType  :: Expr OffsetSpan
   }
 
-bind1 :: Parser BindMany
-bind1 = BindMany <$> idents <*> expr
-  where idents = some ident <* _colon
+bindGroup :: Parser (OffsetSpan, BindMany)
+bindGroup = do
+  (Span a _) <- _leftparen
+  ids <- some ident
+  _   <- _colon
+  e   <- expr
+  (Span _ b) <- _rightparen
+  return (Span a b, BindMany ids e)
 
-binds :: Parser [BindMany]
-binds = some (parens bind1)
+bindGroups :: Parser (OffsetSpan, [BindMany])
+bindGroups = do
+  (spans, binds) <- unzip <$> some bindGroup
+  let Span a _ = head spans
+      Span _ b = last spans
+  return (Span a b, binds)
 
-abstraction :: Parser [BindMany]
-abstraction = ((:[]) <$> bind1) <|> binds
-
-------------------------------------------------------------
-
-funBindings :: Parser [BindMany]
-funBindings = _fun *> abstraction <* _arrow
-
--- funAbstraction :: Parser (Expr OffsetSpan)
--- funAbstraction = unrollBinds <$> funBindings <*> expr
-
--- unrollBinds :: [BindMany] -> Expr OffsetSpan -> Expr OffsetSpan
--- unrollBinds bs expr = foldr unrollBind expr bs
-
--- unrollBind :: BindMany -> Expr OffsetSpan -> Expr OffsetSpan
--- unrollBind (BindMany xs tpe) = bindMany tpe xs
-
--- bindMany :: Expr OffsetSpan -> [(OffsetSpan, Ident)] -> Expr OffsetSpan -> Expr OffsetSpan
--- bindMany _   []     expr = expr
--- bindMany tpe ((s,x):xs) expr = mkLambda Lambda $ Abstraction x tpe (bindMany tpe xs expr)
-
--- bind1 :: Parser BindMany
--- bind1 = BindMany <$> vars <*> expr
---   where vars = (some ident <* _colon) :: Parser [Ident]
-
--- binds :: Parser [BindMany]
--- binds = some (parens bind1)
-
--- abstraction :: Parser [BindMany]
--- abstraction = ((:[]) <$> bind1) <|> binds
+lambdaAbstraction :: Parser (Expr OffsetSpan)
+lambdaAbstraction = do
+  (Span a _) <- _fun
+  (sp, bgs) <- bindGroups
+  _ <- _arrow
+  (Span _ b, context) <- withSpan <$> expr
+  return $ mkLambda (Span a b) (Bindings (map convert bgs)) context
+  where 
+    convert :: BindMany -> ([Ident], Expr OffsetSpan)
+    convert (BindMany names tpe) = (map snd names, tpe)

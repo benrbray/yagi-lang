@@ -29,7 +29,7 @@ main = do
   putStrLn "hello, world!"
 
   parseTest P.variable "foo bar baz"
-  parseTest P.universe "fType100 bar baz"
+  parseTest P.lambdaAbstraction "fun (x y : t) (z : Type0) -> x"
 
   --parseTest (TS.string "foo\nbar") "foo\nbar baz"
   --parseTest p "foo bar baz"
