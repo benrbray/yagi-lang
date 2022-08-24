@@ -27,6 +27,7 @@ library
   default-language:    Haskell2010
   exposed-modules:
     Yagi.Lang,
+    Yagi.Syntax,
     Yagi.ParserNew,
     Util.PrettyPrint,
     Util.Tuple,

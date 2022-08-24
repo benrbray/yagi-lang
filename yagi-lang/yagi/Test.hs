@@ -31,11 +31,4 @@ main = do
   parseTest P.variable "foo bar baz"
   parseTest P.lambdaAbstraction "fun (x y : t) (z : Type0) -> x"
 
-  --parseTest (TS.string "foo\nbar") "foo\nbar baz"
-  --parseTest p "foo bar baz"
-
-  -- print $ TS.posFrom (TS.Pos 0 0) ""
-  -- print $ TS.posFrom (TS.Pos 0 0) "\n"
-  -- print $ TS.posFrom (TS.Pos 3 2) "foo\nbbbb\nbaz\n\nccc"
-
   pure ()
