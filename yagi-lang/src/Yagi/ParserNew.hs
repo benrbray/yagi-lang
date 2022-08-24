@@ -9,7 +9,10 @@ module Yagi.ParserNew (
   variable, universe,
   lambdaAbstraction,
   piAbstraction,
-  expr
+  expr,
+  parse, ParseResult(..),
+  lineColFromOffset, offsetFromLineCol,
+  termAtPos
 ) where
 
 -- misc
@@ -173,3 +176,43 @@ piAbstraction = do
   where 
     convert :: BindMany -> ([Ident], Expr OffsetSpan)
     convert (BindMany names tpe) = (map snd names, tpe)
+
+------------------------------------------------------------
+
+offsetFromLineCol :: ParseResult -> PosLineCol -> PosOffset
+offsetFromLineCol ParseResult{..} = offsetFromLineCol' parsedLines
+
+-- TODO make efficient with binary tree
+offsetFromLineCol' :: [PosOffset] -> PosLineCol -> PosOffset
+offsetFromLineCol' _  (PosLineCol 0 c) = PosOffset c
+offsetFromLineCol' ls (PosLineCol l c) = PosOffset $ sum (take l offs) + c
+  where offs = map posOffset ls
+
+-- TODO make efficient with binary tree
+lineColFromOffset
+  :: ParseResult -- line lengths
+  -> PosOffset   -- absolute offset into the string
+  -> PosLineCol
+lineColFromOffset ParseResult{..} (PosOffset off) = go 0 0 (map posOffset parsedLines)
+  where go
+          :: Int   -- accumulator (lines consumed so far)
+          -> Int   -- accumulator (sum of line lengths so far)
+          -> [Int] -- rest
+          -> PosLineCol
+        go l acc [] = PosLineCol l (off - acc)  -- should not happen
+        go l acc (x:xs)
+          | off < acc + x = PosLineCol l (off - acc)
+          | otherwise     = go (l+1) (acc + x) xs
+
+data ParseResult = ParseResult
+  { parsedExpr  :: Expr OffsetSpan
+  , parsedLines :: [PosOffset]
+  } deriving (Show, Eq)
+
+parse :: Text -> Either Text ParseResult
+parse t =
+  case result of
+    Left peb -> Left . T.pack . show $ MP.errorBundlePretty peb
+    Right x -> Right $ ParseResult x (PosOffset <$> lines)
+  where result = MP.runParser expr "[filename]" (TS.textSpan t)
+        lines = map ( (1+) . T.length ) $ T.lines t

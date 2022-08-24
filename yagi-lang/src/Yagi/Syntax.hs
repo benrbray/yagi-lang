@@ -133,12 +133,16 @@ instance Show p => PrettyPrint (Mu (ExprF (Span p))) where
 
 ---- position annotations ----------------------------------
 
-newtype PosOffset = PosOffset Int deriving (Show, Eq, Ord)
+newtype PosOffset = PosOffset { posOffset :: Int } deriving (Show, Eq, Ord)
 
 data PosLineCol = PosLineCol
   { posLine :: !Int
   , posCol  :: !Int
-  } deriving (Show, Eq, Ord)
+  } deriving (Eq, Ord)
+
+instance Show PosLineCol where
+  show :: PosLineCol -> String
+  show PosLineCol{..} = "l" ++ show posLine ++ "c" ++ show posCol
 
 data Span p = Span
   { spanStart :: p

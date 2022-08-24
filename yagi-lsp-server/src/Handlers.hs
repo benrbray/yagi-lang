@@ -36,7 +36,9 @@ import State
 import Files
 
 -- yagi-lang
-import qualified TextSpan as TS
+import qualified Yagi.ParserNew as YP
+import qualified Yagi.Syntax as YS
+import qualified Util.PrettyPrint as YP
 --import qualified TextSpanLineCol as TS
 
 ------------------------------------------------------------
@@ -59,10 +61,10 @@ initializedHandler =
 
 
 -- NOTE: for TextSpanLineCol
-positionLsp2Yagi :: J.Position -> TS.Pos
-positionLsp2Yagi (J.Position l c) = TS.Pos (fromIntegral l) (fromIntegral c)
-positionYagi2Lsp :: TS.Pos -> J.Position
-positionYagi2Lsp (TS.Pos l c) = J.Position (fromIntegral l) (fromIntegral c)
+positionLsp2Yagi :: J.Position -> YS.PosLineCol
+positionLsp2Yagi (J.Position l c) = YS.PosLineCol (fromIntegral l) (fromIntegral c)
+positionYagi2Lsp :: YS.PosLineCol -> J.Position
+positionYagi2Lsp (YS.PosLineCol l c) = J.Position (fromIntegral l) (fromIntegral c)
 
 hoverHandler :: LSP.Handlers HandlerM
 hoverHandler =
@@ -71,13 +73,13 @@ hoverHandler =
       let J.HoverParams _doc pos _workDone = request ^. J.params
           uri_ = _doc^.uri
       
-      result@(TS.ParseResult expr _) <- loadFile uri_
-      let off = TS.offsetFromPos result (positionLsp2Yagi pos)
-      let TS.GetSpan a b term = TS.termAtPos off expr
-      let leftPos = TS.posFromOffset result a
-      let rightPos = TS.posFromOffset result b
+      result@(YP.ParseResult expr _) <- loadFile uri_
+      let off = YP.offsetFromLineCol result (positionLsp2Yagi pos)
+      let (YS.Span a b, term) = YS.withSpan $ YP.termAtPos off expr
+      let leftPos = YP.lineColFromOffset result a
+      let rightPos = YP.lineColFromOffset result b
       let _range = Just $ J.Range (positionYagi2Lsp leftPos) (positionYagi2Lsp rightPos)
-      let _contents = J.HoverContents (J.MarkupContent J.MkPlainText (T.pack $ show term))
+      let _contents = J.HoverContents (J.MarkupContent J.MkPlainText (YP.pretty term))
 
       respond (Right (Just J.Hover{ _contents, _range }))
 

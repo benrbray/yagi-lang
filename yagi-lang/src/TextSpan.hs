@@ -9,16 +9,12 @@ module TextSpan
   ( CharWithPos(..)
   , TextSpan(..)
   , textSpan, textSpanFrom
-  , parse, termAtPos
   , ExprWithSpan(..), ExprWithSpanF(..), WithSpan(..)
   , pattern GetSpan
   , cons
   , lexeme, symbol, satisfy, name
   , decimal
   , isAlpha, isAlphaNum
-  , posFromOffset, offsetFromPos
-  , ParseResult(..)
-  , Pos(..)
   )
 where
 
@@ -338,48 +334,48 @@ termAtPos p expr = finish (prune p expr)
 
 ------------------------------------------------------------
 
-data ParseResult = ParseResult
-  { parsedExpr  :: ExprWithSpan
-  , parsedLines :: [Int]
-  } deriving (Show, Eq)
+-- data ParseResult = ParseResult
+--   { parsedExpr  :: ExprWithSpan
+--   , parsedLines :: [Int]
+--   } deriving (Show, Eq)
 
-data Pos = Pos
-  { posLine :: !Int -- from 0
-  , posCol  :: !Int -- from 0
-  } deriving (Eq, Ord)
+-- data Pos = Pos
+--   { posLine :: !Int -- from 0
+--   , posCol  :: !Int -- from 0
+--   } deriving (Eq, Ord)
 
-instance Show Pos where
-  show :: Pos -> String
-  show Pos{..} = "l" ++ show posLine ++ "c" ++ show posCol
+-- instance Show Pos where
+--   show :: Pos -> String
+--   show Pos{..} = "l" ++ show posLine ++ "c" ++ show posCol
 
-offsetFromPos :: ParseResult -> Pos -> Int
-offsetFromPos ParseResult{..} = offsetFromPos' parsedLines
+-- offsetFromPos :: ParseResult -> Pos -> Int
+-- offsetFromPos ParseResult{..} = offsetFromPos' parsedLines
 
--- TODO make efficient with binary tree
-offsetFromPos' :: [Int] -> Pos -> Int
-offsetFromPos' _  (Pos 0 c) = c
-offsetFromPos' ls (Pos l c) = sum (take l ls) + c
+-- -- TODO make efficient with binary tree
+-- offsetFromPos' :: [Int] -> Pos -> Int
+-- offsetFromPos' _  (Pos 0 c) = c
+-- offsetFromPos' ls (Pos l c) = sum (take l ls) + c
 
--- TODO make efficient with binary tree
-posFromOffset
-  :: ParseResult -- line lengths
-  -> Int   -- absolute offset into the string
-  -> Pos
-posFromOffset ParseResult{..} off = go 0 0 parsedLines
-  where go
-          :: Int   -- accumulator (lines consumed so far)
-          -> Int   -- accumulator (sum of line lengths so far)
-          -> [Int] -- rest
-          -> Pos
-        go l acc [] = Pos l (off - acc)  -- should not happen
-        go l acc (x:xs)
-          | off < acc + x = Pos l (off - acc)
-          | otherwise     = go (l+1) (acc + x) xs
+-- -- TODO make efficient with binary tree
+-- posFromOffset
+--   :: ParseResult -- line lengths
+--   -> Int   -- absolute offset into the string
+--   -> Pos
+-- posFromOffset ParseResult{..} off = go 0 0 parsedLines
+--   where go
+--           :: Int   -- accumulator (lines consumed so far)
+--           -> Int   -- accumulator (sum of line lengths so far)
+--           -> [Int] -- rest
+--           -> Pos
+--         go l acc [] = Pos l (off - acc)  -- should not happen
+--         go l acc (x:xs)
+--           | off < acc + x = Pos l (off - acc)
+--           | otherwise     = go (l+1) (acc + x) xs
 
-parse :: Text -> Either Text ParseResult
-parse t =
-  case result of
-    Left peb -> Left . T.pack . show $ MP.errorBundlePretty peb
-    Right x -> Right $ ParseResult x lines
-  where result = MP.runParser pNode "[filename]" (textSpan t)
-        lines = map ( (1+) . T.length ) $ T.lines t
+-- parse :: Text -> Either Text ParseResult
+-- parse t =
+--   case result of
+--     Left peb -> Left . T.pack . show $ MP.errorBundlePretty peb
+--     Right x -> Right $ ParseResult x lines
+--   where result = MP.runParser pNode "[filename]" (textSpan t)
+--         lines = map ( (1+) . T.length ) $ T.lines t
