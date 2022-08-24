@@ -28,6 +28,7 @@ main = do
   putStrLn "hello, world!"
 
   parseTest P.variable "foo bar baz"
-  parseTest P.lambdaAbstraction "fun (x y : t) (z : Type0) -> x"
+  parseTest P.lambdaAbstraction "fun (x y : t) (z : Type0) -> forall (q : t), z"
+  parseTest P.expr "(fun (x y : t) (z : Type0) -> forall (q : t), z) Type2"
 
   pure ()

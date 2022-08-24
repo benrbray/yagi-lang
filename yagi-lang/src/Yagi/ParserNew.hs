@@ -7,7 +7,9 @@
 module Yagi.ParserNew (
   Expr(..), Ident(..), Abstraction(..),
   variable, universe,
-  lambdaAbstraction
+  lambdaAbstraction,
+  piAbstraction,
+  expr
 ) where
 
 -- misc
@@ -57,11 +59,17 @@ spanOnly ts = getSpan <$> ts
 _fun :: Parser OffsetSpan
 _fun = spanOnly $ TS.symbol "fun"
 
+_forall :: Parser OffsetSpan
+_forall = spanOnly $ TS.symbol "forall"
+
 _colon :: Parser OffsetSpan
 _colon = spanOnly $ TS.symbol ":"
 
 _colonEqual :: Parser OffsetSpan
 _colonEqual = spanOnly $ TS.symbol ":="
+
+_comma :: Parser OffsetSpan
+_comma = spanOnly $ TS.symbol ","
 
 _arrow :: Parser OffsetSpan
 _arrow = spanOnly $ TS.symbol "->"
@@ -109,7 +117,9 @@ spine = foldl1 wrap <$> some simpleExpr
 
 expr :: Parser (Expr OffsetSpan)
 expr = MP.choice
-  [ spine
+  [ MP.try spine
+  , lambdaAbstraction
+  , piAbstraction
   ]
 
 simpleExpr :: Parser (Expr OffsetSpan)
@@ -155,6 +165,17 @@ lambdaAbstraction = do
   (Span a _) <- _fun
   (sp, bgs) <- bindGroups
   _ <- _arrow
+  (Span _ b, context) <- withSpan <$> expr
+  return $ mkLambda (Span a b) (Bindings (map convert bgs)) context
+  where 
+    convert :: BindMany -> ([Ident], Expr OffsetSpan)
+    convert (BindMany names tpe) = (map snd names, tpe)
+
+piAbstraction :: Parser (Expr OffsetSpan)
+piAbstraction = do
+  (Span a _) <- _forall
+  (sp, bgs) <- bindGroups
+  _ <- _comma
   (Span _ b, context) <- withSpan <$> expr
   return $ mkLambda (Span a b) (Bindings (map convert bgs)) context
   where 
