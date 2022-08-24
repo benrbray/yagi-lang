@@ -1,13 +1,8 @@
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE RecordWildCards     #-}
 {-# LANGUAGE TupleSections       #-}
-{-# LANGUAGE ExplicitForAll      #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE InstanceSigs        #-}
 {-# LANGUAGE DeriveFunctor       #-}
 {-# LANGUAGE FlexibleInstances   #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PatternSynonyms     #-}
 
 module TextSpan

@@ -1,18 +1,15 @@
-{-# LANGUAGE DeriveFunctor       #-}
-{-# LANGUAGE TypeApplications    #-}
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE RecordWildCards     #-}
-{-# LANGUAGE TupleSections       #-}
-{-# LANGUAGE ExplicitForAll      #-}
-{-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE InstanceSigs        #-}
-{-# LANGUAGE FlexibleInstances   #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveFunctor     #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TupleSections     #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Example.RecursionSchemes where
 
 import Control.Arrow
 import Data.Foldable
+
+------------------------------------------------------------
 
 -- Thomson 2014, "Recursion Schemes"
 -- https://blog.sumtypeofway.com/posts/recursion-schemes-part-2.html

@@ -1,8 +1,5 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TupleSections     #-}
-{-# LANGUAGE ExplicitForAll     #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE DeriveFunctor #-}
 module Example.LexerExample where
 

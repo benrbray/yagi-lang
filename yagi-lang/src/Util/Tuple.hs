@@ -2,6 +2,8 @@ module Util.Tuple where
 
 import Control.Monad
 
+------------------------------------------------------------
+
 toFst :: (a -> b) -> a -> (b,a)
 toFst = ((,) =<<)
 

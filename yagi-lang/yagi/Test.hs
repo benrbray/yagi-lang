@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 module Test where
 
 import qualified TextSpan as TS

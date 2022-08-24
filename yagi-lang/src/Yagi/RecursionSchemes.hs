@@ -1,5 +1,4 @@
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Yagi.RecursionSchemes (

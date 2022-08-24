@@ -1,15 +1,8 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE TupleSections     #-}
-{-# LANGUAGE ExplicitForAll    #-}
-{-# LANGUAGE InstanceSigs      #-}
-{-# LANGUAGE RecordWildCards   #-}
-{-# LANGUAGE DeriveFunctor     #-}
-{-# LANGUAGE KindSignatures    #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE DeriveFunctor         #-}
+{-# LANGUAGE TypeSynonymInstances  #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 module Yagi.Syntax where
 
 

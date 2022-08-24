@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 module Example.ParseUrls where
 
 import Text.Megaparsec hiding (State)
