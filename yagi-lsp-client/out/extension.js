@@ -5,6 +5,7 @@ const path = require("path");
 const vscode_1 = require("vscode");
 const node_1 = require("vscode-languageclient/node");
 const error_1 = require("./error");
+const rangeHover_1 = require("./rangeHover");
 const find_language_server_1 = require("./find-language-server");
 const logger_1 = require("./logger");
 const utils_1 = require("./utils");
@@ -152,8 +153,32 @@ exports.activateServerForFolder = activateServerForFolder;
 function makeLanguageClient(args) {
     // set key to null while server is starting up
     langClients.set(args.clientKey, null);
+    // provideHover middleware
+    // (adapted from [rust-analyzer](https://github.com/rust-lang/rust-analyzer/pull/9693/files#))
+    async function provideHover(document, position, token, _next) {
+        const editor = vscode_1.window.activeTextEditor;
+        const range = editor?.selection?.contains(position)
+            ? langClient.code2ProtocolConverter.asRange(editor.selection)
+            : undefined;
+        try {
+            return langClient.protocol2CodeConverter.asHover(await langClient.sendRequest(rangeHover_1.rangeHover, {
+                textDocument: langClient.code2ProtocolConverter.asTextDocumentIdentifier(document),
+                position: langClient.code2ProtocolConverter.asPosition(position),
+                ...(range && { range: range })
+            }, token));
+        }
+        catch (error) {
+            langClient.handleFailedRequest(node_1.HoverRequest.type, error, null);
+            return null;
+        }
+    }
     // create and start language client
-    const langClient = new node_1.LanguageClient("haskell-lsp", args.langName, args.serverOptions, args.clientOptions);
+    const langClient = new node_1.LanguageClient("haskell-lsp", args.langName, args.serverOptions, {
+        ...args.clientOptions,
+        middleware: {
+            provideHover
+        }
+    });
     langClient.registerProposedFeatures();
     langClient.start();
     langClients.set(args.clientKey, langClient);
@@ -195,7 +220,12 @@ function makeClientOptions(args) {
         revealOutputChannelOn: node_1.RevealOutputChannelOn.Never,
         outputChannel: args.outputChannel,
         outputChannelName: args.langName,
-        workspaceFolder: args.folder
+        workspaceFolder: args.folder,
+        middleware: {
+            async provideHover(document, position, token, _next) {
+                return this;
+            }
+        }
     };
 }
 ////////////////////////////////////////////////////////////

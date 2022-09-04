@@ -1,8 +1,12 @@
 import * as path from 'path';
 
 import {
+	CancellationToken,
 	ExtensionContext,
 	OutputChannel,
+	Hover,
+	Position,
+	ProviderResult,
 	TextDocument,
 	Uri,
 	window,
@@ -13,14 +17,17 @@ import {
 import {
 	Executable,
 	ExecutableOptions,
+	HoverRequest,
 	LanguageClient,
 	LanguageClientOptions,
 	Logger,
+	ProvideHoverSignature,
 	RevealOutputChannelOn,
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
 import { LanguageServerNotFoundError } from './error';
+import { rangeHover } from './rangeHover';
 import { findLanguageServer } from './find-language-server';
 import { ExtensionLogger, LogLevel } from './logger';
 import { expandPathVariables } from './utils';
@@ -196,15 +203,57 @@ export function makeLanguageClient(
 ): void {
 	// set key to null while server is starting up
 	langClients.set(args.clientKey, null);
-	
+
+	// provideHover middleware
+	// (adapted from [rust-analyzer](https://github.com/rust-lang/rust-analyzer/pull/9693/files#))
+	async function provideHover(
+		document: TextDocument,
+		position: Position,
+		token: CancellationToken,
+		_next: ProvideHoverSignature
+	): Promise<Hover|null|undefined> {
+		const editor = window.activeTextEditor;
+		const range
+			= editor?.selection?.contains(position) 
+			? langClient.code2ProtocolConverter.asRange(editor.selection)
+			: undefined;
+
+		try {
+			return langClient.protocol2CodeConverter.asHover(
+				await langClient.sendRequest(
+					rangeHover,
+					{
+						textDocument: langClient.code2ProtocolConverter.asTextDocumentIdentifier(document),
+						position: langClient.code2ProtocolConverter.asPosition(position),
+						...(range && { range: range })
+					},
+					token
+				)
+			);
+		} catch(error: unknown) {
+			langClient.handleFailedRequest(
+					HoverRequest.type,
+					error,
+					null
+			);
+
+			return null;
+		}
+	}
+
 	// create and start language client
-	const langClient =
+	const langClient: LanguageClient =
 		new LanguageClient(
 			"haskell-lsp",
 			args.langName,
 			args.serverOptions,
-			args.clientOptions
-		); 
+			{
+				...args.clientOptions,
+				middleware: {
+					provideHover
+				}
+			}
+		);
 
 	langClient.registerProposedFeatures();
 	langClient.start();
@@ -264,7 +313,14 @@ function makeClientOptions(
 		revealOutputChannelOn: RevealOutputChannelOn.Never,
 		outputChannel: args.outputChannel,
 		outputChannelName: args.langName,
-		workspaceFolder: args.folder
+		workspaceFolder: args.folder,
+		middleware: {
+			async provideHover(document, position, token, _next): Promise<Hover> {
+				
+
+				return (this as any);
+			}
+		}
 	};
 }
 
