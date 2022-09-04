@@ -50,7 +50,7 @@ import qualified Data.Set           as Set
 import qualified Data.List.NonEmpty as NE
 
 -- yagi-lang
-import Yagi.RecursionSchemes
+import Util.RecursionSchemes
 
 ---- helpers (move these?) ---------------------------------
 

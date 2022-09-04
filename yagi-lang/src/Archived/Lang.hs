@@ -1,4 +1,4 @@
-module Yagi.Lang where
+module Archived.Lang where
 
 import Data.Text (Text)
 

@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE UndecidableInstances #-}
-module PrettyPrint where
+module Archived.PrettyPrint where
 
 import Data.Text (Text)
 import qualified Data.Text as T
 
-import Yagi.Lang
+import Archived.Lang
 
 showText :: Show a => a -> Text
 showText = T.pack . show 

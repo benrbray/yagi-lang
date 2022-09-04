@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE TypeFamilies  #-}
 
-module Yagi.Parser where
+module Archived.Parser where
 
 -- megaparsec
 import Text.Megaparsec hiding (State)
@@ -30,9 +30,9 @@ import Data.Tuple.Extra
 
 import qualified TextSpan as TS
 
-import Yagi.Lang
+import Archived.Lang
 import Data.Char
-import PrettyPrint
+import Archived.PrettyPrint
 
 import System.IO
 

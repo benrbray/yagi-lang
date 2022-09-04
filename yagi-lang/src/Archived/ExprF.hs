@@ -1,7 +1,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE DeriveFunctor #-}
-module ExprF where
+module Archived.ExprF where
 
 -- megaparsec
 import Text.Megaparsec hiding (State, Pos, SourcePos)
@@ -52,9 +52,6 @@ type ExprWithSpan = Mu ExprWithSpanF
 exprWithSpan :: Span -> ExprF (Mu ExprWithSpanF) -> ExprWithSpan
 exprWithSpan s e = InF $ ExprWithSpanF (WithSpan s e)
 
-x :: ExprWithSpan
-x = exprWithSpan (Span 0 0) (FVar "")
-
 ------------------------------------------------------------
 
 type Parser = Parsec Void Text
@@ -69,4 +66,4 @@ symbol = L.symbol sc
 
 sc,scn :: Parser ()
 scn = L.space space1 empty empty
-sc = L.space (void $ some (char ' ' <|> char '\t')) empty empty
+sc  = L.space (void $ some (char ' ' <|> char '\t')) empty empty

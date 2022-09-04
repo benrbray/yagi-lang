@@ -38,7 +38,6 @@ library
   hs-source-dirs:  src
   default-language:    Haskell2010
   exposed-modules:
-    Yagi.Lang,
     Yagi.Syntax,
     Yagi.ParserNew,
     Util.PrettyPrint,
@@ -46,10 +45,7 @@ library
     Util.RecursionSchemes,
     TextSpan
   other-modules:
-    Yagi.Parser,
-    PrettyPrint,
-    Example.RecursionSchemes,
-    ExprF
+    Example.RecursionSchemes
 
 executable yagi
   import: common
