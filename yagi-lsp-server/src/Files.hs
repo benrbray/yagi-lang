@@ -20,7 +20,7 @@ import qualified Language.LSP.VFS        as LSP
 import State
 
 -- yagi-lang
-import qualified Yagi.ParserNew as P
+import qualified Yagi.Parser as P
 
 ------------------------------------------------------------
 

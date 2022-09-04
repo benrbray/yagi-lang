@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Yagi.ParserNew (
+module Yagi.Parser (
   Expr(..), Ident(..), Abstraction(..),
   variable, universe,
   lambdaAbstraction,
@@ -38,8 +38,8 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Control.Monad.Combinators (many, some)
 
 -- yagi-lang
-import TextSpan (TextSpan(..))
-import qualified TextSpan as TS
+import Util.TextSpan (TextSpan(..))
+import qualified Util.TextSpan as TS
 import Yagi.Syntax
 
 ------------------------------------------------------------

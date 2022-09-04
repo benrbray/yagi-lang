@@ -35,8 +35,8 @@ import qualified Text.Megaparsec.Char.Lexer as L
 import Control.Monad.Combinators (many, some)
 
 -- yagi-lang
-import TextSpan (TextSpan(..))
-import qualified TextSpan as TS
+import Util.TextSpan (TextSpan(..))
+import qualified Util.TextSpan as TS
 import Util.RecursionSchemes
 import Util.PrettyPrint
 import Util.Tuple

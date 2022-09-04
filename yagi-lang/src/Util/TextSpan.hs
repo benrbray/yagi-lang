@@ -5,7 +5,7 @@
 {-# LANGUAGE FlexibleInstances   #-}
 {-# LANGUAGE PatternSynonyms     #-}
 
-module TextSpan
+module Util.TextSpan
   ( CharWithPos(..)
   , TextSpan(..)
   , textSpan, textSpanFrom

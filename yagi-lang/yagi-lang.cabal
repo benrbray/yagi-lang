@@ -39,11 +39,11 @@ library
   default-language:    Haskell2010
   exposed-modules:
     Yagi.Syntax,
-    Yagi.ParserNew,
+    Yagi.Parser,
     Util.PrettyPrint,
-    Util.Tuple,
     Util.RecursionSchemes,
-    TextSpan
+    Util.Tuple,
+    Util.TextSpan
   other-modules:
     Example.RecursionSchemes
 

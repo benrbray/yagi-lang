@@ -1,14 +1,16 @@
 module Test where
 
-import qualified TextSpan as TS
 import qualified Text.Megaparsec as MP
+import qualified Text.Megaparsec.Error as MP
 import Data.Char as C
 import Data.Void
-import qualified Text.Megaparsec.Error as MP
 import Data.Data
 
-import qualified Yagi.ParserNew as P
+import qualified Yagi.Parser as P
+import qualified Util.TextSpan as TS
 import Util.PrettyPrint
+
+------------------------------------------------------------
 
 parseTest p t = do
   let r = MP.runParser p "<file>" (TS.textSpan t)

@@ -28,7 +28,7 @@ import Data.Proxy
 
 import Data.Tuple.Extra
 
-import qualified TextSpan as TS
+import qualified Util.TextSpan as TS
 
 import Archived.Lang
 import Data.Char

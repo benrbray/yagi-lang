@@ -27,8 +27,8 @@ import Language.LSP.Types.Lens
 import qualified Language.LSP.Types as J
 import Language.LSP.Types (Uri)
 import qualified Language.LSP.Server as LSP
-import qualified Language.LSP.Types.Lens       as J -- todo
-import           Control.Lens hiding (Iso) -- todo
+import qualified Language.LSP.Types.Lens as J
+import           Control.Lens hiding (Iso)
 import qualified Language.LSP.VFS as LSP
 
 -- yagi-lsp-server
@@ -36,10 +36,9 @@ import State
 import Files
 
 -- yagi-lang
-import qualified Yagi.ParserNew as YP
+import qualified Yagi.Parser as YP
 import qualified Yagi.Syntax as YS
 import qualified Util.PrettyPrint as YP
---import qualified TextSpanLineCol as TS
 
 ------------------------------------------------------------
 
